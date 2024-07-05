@@ -1,0 +1,27 @@
+{
+  "name": "glab-tools",
+  "version": "1.0.0",
+  "description": "command line utilities for work with gitlab",
+  "main": "index.js",
+  "bin": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/htammen/glab-tools.git"
+  },
+  "homepage": "https://github.com/htammen/glab-tools",
+  "keywords": [
+    "git",
+    "gitlab",
+    "glab",
+    "cli"
+  ],
+  "author": "Helmut Tammen <h.tammen@tammen-it-solutions.de>",
+  "license": "MIT",
+  "dependencies": {
+    "zx": "^8.1.4"
+  }
+}
