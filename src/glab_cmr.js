@@ -2,6 +2,37 @@
 
 import { chalk, question, echo, $, os, fs, YAML } from "zx"
 
+const getMileStone = async () => {
+  const projectGroups = JSON.parse((await $`glab api projects/:id/groups`).stdout)
+
+  let mileStones = []
+
+  const prjMileStones = JSON.parse((await $`glab api projects/:id/milestones`).stdout)
+  if (prjMileStones.length > 0) {
+    for (const mileStone of prjMileStones) {
+      mileStones.push({ id: mileStone.id, iid: mileStone.iid, title: mileStone.title, description: mileStone.description })
+    }
+  }
+
+  for (const group of projectGroups) {
+    const groupMileStones = JSON.parse((await $`glab api groups/${group.id}/milestones`).stdout)
+
+    for (const mileStone of groupMileStones) {
+      mileStones.push({ id: mileStone.id, iid: mileStone.iid, title: mileStone.title, description: mileStone.description })
+    }
+  }
+  if (mileStones.length > 0) {
+    echo(chalk.bold(`\MILESTONES`))
+    mileStones.forEach((element, idx) => {
+      echo(chalk.blue(`${idx}: ${element.title} | ${element.description}`))
+    });
+    const selectedMilestone = (await question(chalk.yellow(`Select a mileStone to assign the merge reqeuest to [enter the index or leave blank]: `)))
+    if (selectedMilestone.length > 0) {
+      return mileStones[selectedMilestone]
+    }
+  }
+}
+
 const glab_cmr = async () => {
   const glabVersion = (await $`glab --version`).stdout
   if (glabVersion.startsWith('glab version')) {
@@ -27,7 +58,8 @@ The merge request is not created until you confirm this information.`)
     // const branchDefault = 'feature/'
     // const branchName = await $`read -e -p "branch name: " -i ${branchDefault}`
 
-    const description = `Draft: ${branchName}`
+    let description = await question(chalk.yellow(`\nEnter the description [leave empty for 'Draft: ${branchName}']: `))
+    if (!description) description = `Draft: ${branchName}`
 
     const labels = await $`glab label list --output json`.json()
     let labelNames = ""
@@ -36,10 +68,18 @@ The merge request is not created until you confirm this information.`)
       labels.forEach((element, idx) => {
         echo(chalk.blue(`${idx}: ${element.name} | ${element.description}`))
       });
-      const arrSelectedLabels = (await question(chalk.yellow(`Select lables to add to the merge reqeuest (separate indexes by comma): `))).split(',');
+      const arrSelectedLabels = (await question(chalk.yellow(`Select lables to add to the merge reqeuest [separate indexes by comma]: `))).split(',');
       if (arrSelectedLabels.length > 0 && arrSelectedLabels[0].trim() !== '') {
         labelNames = arrSelectedLabels.map(labelIdx => labels[labelIdx].name).join(',')
       }
+    }
+
+    const mileStone = await getMileStone()
+    let mileStoneTitle = ''
+    let mileStoneId = ""
+    if (mileStone) {
+      mileStoneTitle = mileStone.title
+      mileStoneId = mileStone.id
     }
 
     echo(chalk.black.bgCyan(`\nI will create a new branch and merge request with the following data`))
@@ -49,6 +89,8 @@ mr title: ${branchName}
 mr description: ${description}
 mr assignee: ${user}
 mr label: ${labelNames}
+mr mileStone: ${mileStoneTitle}
+mr mileStoneId: ${mileStoneId}
 mr source-branch: ${branchName}
 mr target-branch: ${targetBranch}
 mr settings:  
@@ -61,17 +103,31 @@ mr settings:
     const bStart = await question(chalk.yellow(`Do you want to use this settings [y/n]? `))
 
     if (bStart.toUpperCase() === 'Y') {
-      await $`glab mr create --assignee "${user}" \
-  --draft \
-  --title ${branchName} \
-  --description ${description} \
-  --label ${labelNames} \
-  --source-branch ${branchName} \
-  --target-branch ${targetBranch} \
-  --create-source-branch \
-  --squash-before-merge \
-  --remove-source-branch
+
+      await $`glab mr create --assignee ${user} \
+--draft \
+--title ${branchName} \
+--description ${description} \
+--source-branch ${branchName} \
+--target-branch ${targetBranch} \
+--create-source-branch \
+--squash-before-merge \
+--remove-source-branch
 `
+      if (labelNames && mileStoneId) {
+        await $`glab mr update ${branchName} \
+--label ${labelNames} \
+--milestone ${mileStoneId} \
+`
+      } else if (labelNames) {
+        await $`glab mr update ${branchName} \
+--label ${labelNames} \
+`
+      } else if (mileStoneId) {
+        await $`glab mr update ${branchName} \
+--milestone ${mileStoneId} \
+`
+      }
 
       await $`git fetch origin`
       await $`git switch ${branchName}`
