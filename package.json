@@ -1,6 +1,6 @@
 {
   "name": "glab-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "command line utilities for work with gitlab",
   "main": "index.js",
   "bin": "index.js",
