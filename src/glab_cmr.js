@@ -35,7 +35,8 @@ const getMileStone = async () => {
 
 const glab_cmr = async () => {
   const glabVersion = (await $`glab --version`).stdout
-  if (glabVersion.startsWith('glab version')) {
+  const regEx = new RegExp('.*glab version:')
+  if (regEx.test(glabVersion)) {
     echo(chalk.bold(`CREATE MERGE REQUEST and NEW BRANCH`))
     echo(
       `This application creates a new merge request and a matching branch.

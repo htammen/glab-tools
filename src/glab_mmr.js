@@ -4,7 +4,8 @@ import { chalk, question, echo, $, os, fs, YAML } from "zx"
 
 const glab_mmr = async () => {
   const glabVersion = (await $`glab --version`).stdout
-  if (glabVersion.startsWith('glab version')) {
+  const regEx = new RegExp('.*glab version:')
+  if (regEx.test(glabVersion)) {
 
     let current_branch = await $`git branch --show-current`
     echo(chalk.bold(`MERGE MERGE REQUEST and NEW BRANCH`))

@@ -1,5 +1,8 @@
 # GLAB TOOLS
 
+![NPM Version](https://shields.sp-codes.de/npm/v/glab-tools)
+![NPM License](https://shields.sp-codes.de/npm/l/glab-tools)
+
 This package is a collection of cli tools for your daily work
 with gitlab repositories.  
 I primarily created the tools in this package for my personal
