@@ -115,17 +115,21 @@ mr settings:
 --squash-before-merge \
 --remove-source-branch
 `
+
+      // request the iid of the new merge request.
+      let branch_id = await $`glab mr list --source-branch=${branchName} --output json | jq .[].iid`
+
       if (labelNames && mileStoneId) {
-        await $`glab mr update ${branchName} \
+        await $`glab mr update ${branch_id} \
 --label ${labelNames} \
 --milestone ${mileStoneId} \
 `
       } else if (labelNames) {
-        await $`glab mr update ${branchName} \
+        await $`glab mr update ${branch_id} \
 --label ${labelNames} \
 `
       } else if (mileStoneId) {
-        await $`glab mr update ${branchName} \
+        await $`glab mr update ${branch_id} \
 --milestone ${mileStoneId} \
 `
       }
@@ -147,5 +151,4 @@ mr settings:
 
 }
 
-export default glab_cmr
-
+export default glab_cmr;

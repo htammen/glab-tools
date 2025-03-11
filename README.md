@@ -30,6 +30,8 @@ Hence I cannot help you with any problems of the other methods.
 Without this configuration most of the tools of this collection will
 not run.
 
+Since version 1.0.3 [jq](https://jqlang.org/) is also required
+
 ## installation
 
 Install it via npm, yarn or whatever node.js package manager you use.
